@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>缓存看守</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="_magpie/bridge.js"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 1-2.3-4.7M20 4v5h-5"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m8 10 4 4 4-4"/></symbol>
+    <symbol id="i-cache" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m8 12 3 3 5-6"/><circle cx="12" cy="12" r="9"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m10.3 4-8 14a2 2 0 0 0 1.7 3h16a2 2 0 0 0 1.7-3l-8-14a2 2 0 0 0-3.4 0ZM12 9v4m0 4h.01"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h9m4 0h3M4 17h3m4 0h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></symbol>
+  </svg>
+
+  <div class="page-shell">
+    <header class="page-header">
+      <div class="page-identity">
+        <span class="app-mark"><svg class="icon"><use href="#i-cache"/></svg></span>
+        <div><h1>缓存看守</h1><p>缓存复用与异常监控</p></div>
+      </div>
+      <div class="toolbar" aria-label="刷新控制">
+        <div class="refresh-controls">
+          <button id="refresh" class="icon-button" type="button" aria-label="刷新数据" title="刷新数据"><svg class="icon"><use href="#i-refresh"/></svg></button>
+          <span class="control-divider"></span>
+          <label class="cadence-control">
+            <span class="sr-only">自动刷新周期</span>
+            <select id="cadence" title="自动刷新周期"><option value="5">5 秒</option><option value="10" selected>10 秒</option><option value="30">30 秒</option><option value="60">60 秒</option></select>
+            <svg class="icon"><use href="#i-chevron"/></svg>
+          </label>
+        </div>
+        <time id="updated" class="updated" title="最近刷新时间">—</time>
+      </div>
+    </header>
+    <p id="notice" class="notice" role="status" hidden></p>
+
+    <main>
+      <details id="alertPanel" class="alert-panel">
+        <summary>
+          <span class="alert-status"><svg class="icon"><use id="alertIcon" href="#i-check"/></svg></span>
+          <span class="alert-heading">告警记录</span>
+          <span id="alertSummary" class="alert-summary">暂无告警记录</span>
+          <span id="alertCount" class="count-badge" hidden>0</span>
+          <svg class="icon disclosure"><use href="#i-chevron"/></svg>
+        </summary>
+        <div id="alerts" class="alert-list"><p class="quiet-empty">连续低命中达到告警条件后，会在这里记录。</p></div>
+      </details>
+
+      <section class="dashboard" aria-label="缓存概览">
+        <div class="dashboard-toolbar">
+          <nav class="period-tabs" id="tabs" role="tablist" aria-label="时间范围"></nav>
+          <span id="rangeHint" class="range-hint">最近 1 小时 · 滚动统计</span>
+        </div>
+        <div class="metrics" id="stats" aria-label="缓存概览" aria-busy="true"></div>
+      </section>
+
+      <section class="requests-panel" aria-labelledby="requestsHeading">
+        <div class="table-toolbar">
+          <div class="table-heading"><h2 id="requestsHeading">请求明细</h2><span id="groupCount" class="count-badge">—</span></div>
+          <div class="table-tools">
+            <nav class="period-tabs" id="detailTabs" role="tablist" aria-label="请求明细时间范围"></nav>
+            <label class="search-control"><svg class="icon"><use href="#i-search"/></svg><input id="search" type="search" autocomplete="off" placeholder="搜索客户端、供应商或模型" aria-label="搜索客户端、供应商或模型"></label>
+          </div>
+        </div>
+        <div class="table-scroll" tabindex="0" aria-label="请求明细表，可横向滚动">
+          <table id="groups">
+            <!-- 所有时间范围共用列宽，长名称在单元格内省略。 -->
+            <colgroup>
+              <col class="col-client">
+              <col class="col-provider">
+              <col class="col-model">
+              <col class="col-count">
+              <col class="col-hit">
+              <col class="col-speed">
+              <col class="col-read">
+              <col class="col-write">
+            </colgroup>
+            <thead><tr><th scope="col">客户端</th><th scope="col">供应商</th><th scope="col">模型</th><th scope="col" class="numeric">请求数</th><th scope="col" class="numeric">命中率</th><th scope="col" class="numeric speed-column">平均速度</th><th scope="col" class="numeric token-column">缓存读取</th><th scope="col" class="numeric token-column">缓存写入</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="tableEmpty" class="table-empty" hidden>
+          <span class="empty-symbol"><svg class="icon"><use href="#i-activity"/></svg></span>
+          <h3 id="emptyTitle">等待数据</h3><p id="emptyText">首次统计完成后，数据会自动出现在这里。</p>
+        </div>
+        <footer class="table-footer"><span id="filterHint">按已保存的过滤规则统计</span><span id="hidden"></span></footer>
+      </section>
+
+      <details id="settingsPanel" class="settings-panel">
+        <summary><span class="section-symbol"><svg class="icon"><use href="#i-settings"/></svg></span><span class="settings-heading"><strong>监控设置</strong><span>过滤规则与告警通知</span></span><svg class="icon disclosure"><use href="#i-chevron"/></svg></summary>
+        <div id="settings" role="group" aria-label="监控设置">
+          <div class="settings-section">
+            <div class="settings-section-title"><h3>告警规则</h3><p>同一客户端、供应商与模型分别判断。</p></div>
+            <div class="setting-row"><label for="threshold"><strong>命中率阈值</strong><span>连续请求低于此值时触发告警</span></label><div class="input-unit"><input id="threshold" type="number" min="1" max="100" step="0.1" required><span>%</span></div></div>
+            <div class="setting-row"><label for="consecutive"><strong>连续低命中次数</strong><span>达到此次数后记录告警</span></label><div class="input-unit"><input id="consecutive" type="number" min="2" max="50" step="1" required><span>次</span></div></div>
+            <div class="setting-row"><label for="cooldownSec"><strong>同组告警间隔</strong><span>避免同一问题重复提醒</span></label><div class="input-unit"><input id="cooldownSec" type="number" min="60" max="86400" step="60" required><span>秒</span></div></div>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title"><h3>数据过滤</h3><p>请求过滤同时用于看板和告警。</p></div>
+            <div class="setting-row"><label for="minPrompt"><strong>最小 Prompt</strong><span>过滤标题、分类等较小请求</span></label><div class="input-unit"><input id="minPrompt" type="number" min="0" max="10000000" step="1000" required><span>token</span></div></div>
+            <div class="setting-row"><label for="minRequests"><strong>最小展示样本</strong><span>明细仅展示达到此次数的组</span></label><div class="input-unit"><input id="minRequests" type="number" min="1" max="1000" step="1" required><span>次</span></div></div>
+            <div class="setting-row setting-row-wide"><label for="ignore"><strong>忽略的组</strong><span>按供应商 / 客户端 / 模型前缀匹配，逗号分隔</span></label><input id="ignore" class="text-input" type="text" placeholder="例如 deepseek/, qoder/dsh/"></div>
+          </div>
+          <div class="settings-section">
+            <div class="setting-row"><label for="notify"><strong>告警通知</strong><span>告警始终保留在记录中</span></label><div class="select-input"><select id="notify"><option value="toast">magpie 提示</option><option value="os">magpie + 系统通知</option><option value="log">只写日志</option></select><svg class="icon"><use href="#i-chevron"/></svg></div></div>
+          </div>
+          <footer class="settings-footer"><span id="saved" role="status">保存后自动生效</span><button id="save" class="primary-button" type="button" disabled>保存设置</button></footer>
+        </div>
+      </details>
+    </main>
+    <footer class="page-footer"><span>按 Prompt token 加权统计命中率</span><span title="cache_read / (in + cache_read + cache_write)">读取 / 全部 Prompt</span></footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "magpie-plugins",
+  "private": true,
+  "type": "module",
+  "description": "Magpie 插件仓库：缓存复用看板与连续低命中告警。",
+  "scripts": {
+    "test": "node scripts/verify.mjs",
+    "test:browser": "node plugins/magpie-cache-guard/verification/run-browser.mjs",
+    "pack:check": "node scripts/check-packages.mjs"
+  },
+  "engines": { "node": ">=24" }
+}

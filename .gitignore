@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+**/page/state.js
+**/page/state.js.tmp
+**/verification/output/
+**/verification/sandbox-output/
+**/verification/final-preview/
