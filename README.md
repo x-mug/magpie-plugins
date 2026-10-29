@@ -4,7 +4,7 @@
 
 | 插件 | 版本 | 功能 | 说明 |
 | --- | --- | --- | --- |
-| `magpie-cache-guard` 缓存看守 | 0.8.0 | 按供应商 / 客户端 / 模型统计命中率，连续低命中告警；含 Magpie 内嵌看板与设置 | [使用说明](plugins/magpie-cache-guard/README.md) |
+| `magpie-cache-guard` 缓存看守 | 0.8.1 | 按供应商 / 客户端 / 模型统计命中率，连续低命中告警；含 Magpie 内嵌看板与设置 | [使用说明](plugins/magpie-cache-guard/README.md) · [安装仓库](https://github.com/x-mug/magpie-cache-guard) |
 
 ![缓存看守：概览与明细的时间范围双向同步](docs/cache-guard-light.png)
 
@@ -12,12 +12,17 @@
 
 ## 安装
 
-1. 打开 [Releases](https://github.com/x-mug/magpie-plugins/releases)，下载需要的插件 `.tgz` 和可选的 `SHA256SUMS.txt`。
-2. 将 `.tgz` 解压到固定目录，得到 `package` 文件夹；不要把插件留在下载器的临时解压目录。
-3. 在 Magpie 打开 **Plugins → 添加插件**，输入该 `package` 文件夹的本机绝对路径。装好后侧边栏会出现 **缓存看守**。
-4. 阈值、通知、忽略组、刷新周期都在 Magpie 的插件页面内调整。升级时替换该目录的文件，后端逻辑变更后在 Magpie 中停用再启用插件。
+在 Magpie 的 **Plugins → 添加插件** 输入 `github:x-mug/magpie-cache-guard`，或在 **Discover → Unofficial, on GitHub** 搜索 `magpie-cache-guard`。命令行也可安装：
 
-Magpie 支持加载本地插件目录。本仓库根目录是开发工具包，**不能把根目录或 `x-mug/magpie-plugins` 当作单个插件安装**；当前 Git 仓库 spec 按根目录解析，不支持这里的插件子目录。安装方式依据 [Magpie 官方插件文档](https://usemagpie.ai/docs/plugins#run)。
+```sh
+magpie plugin add github:x-mug/magpie-cache-guard
+```
+
+[独立安装仓库](https://github.com/x-mug/magpie-cache-guard) 由本仓库的插件子目录自动生成；它的根目录就是完整插件，支持 Magpie 直接安装。首次出现在发现页需等待 GitHub 搜索索引与 Magpie 十分钟缓存刷新。
+
+阈值、通知、忽略组、刷新周期都在 Magpie 页面内调整。离线安装可从 [Releases](https://github.com/x-mug/magpie-cache-guard/releases) 下载 `.tgz`，先解压到固定目录，再添加其中 `package` 文件夹的绝对路径。
+
+本源码仓库根目录仍是工具包，**不能把 `x-mug/magpie-plugins` 当作单个插件安装**。安装方式依据 [Magpie 官方插件文档](https://usemagpie.ai/docs/plugins#run)。
 
 开发者也可克隆源码后添加具体插件目录：
 
@@ -34,7 +39,14 @@ plugins/
 scripts/verify.mjs        # 语法、后端与静态页面约束检查
 scripts/check-packages.mjs # 安装包内容与 SHA256 检查
 .github/workflows/ci.yml  # Linux / Windows Node.js 24 验证
+.github/workflows/sync-releases.yml # CI 通过后同步独立安装仓库
 ```
+
+## 发布同步
+
+本仓库是唯一源码入口。`main` 的推送通过 CI 后，`Sync install repositories` 使用 `git subtree split` 将 `plugins/magpie-cache-guard` 原样同步到 `x-mug/magpie-cache-guard` 的 `main`，保留该子目录的提交历史；也支持手动触发。部署密钥只具备目标仓库写入权限，私钥保存在主仓库的 `CACHE_GUARD_DEPLOY_KEY` Actions Secret 中，工作流只对主分支的成功 push 执行，不在 PR 中运行。目标仓库的 `magpie-plugin` Topic 用于 GitHub 自动发现。
+
+同步失败会保留上一次可安装版本，在主仓库 Actions 修复并重新运行即可；不要直接修改发布仓库，否则后续普通推送会因历史分叉而拒绝同步。
 
 ## 开发和验证
 

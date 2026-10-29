@@ -6,16 +6,25 @@ magpie 插件：按「供应商 / 客户端 / 模型」盯住 prompt 缓存命�
 
 ## 安装
 
-在 [magpie-plugins Releases](https://github.com/x-mug/magpie-plugins/releases) 下载本插件的 `.tgz`，解压到固定目录后，在 magpie 的 **Plugins → 添加插件** 中输入解压后的 `package` 文件夹绝对路径。配置、阈值与日常刷新均在 magpie 页面内完成。
+在 Magpie 的 **Plugins → 添加插件** 输入：
 
-源码安装：
-
-```sh
-git clone https://github.com/x-mug/magpie-plugins.git
-magpie plugin add ./magpie-plugins/plugins/magpie-cache-guard
+```text
+github:x-mug/magpie-cache-guard
 ```
 
-本仓库是插件合集，根目录不作为插件安装。Magpie 当前按仓库根解析 Git 插件，不支持通过仓库 spec 指定这里的子目录，所以不要输入 `x-mug/magpie-plugins` 作为安装目标。
+也可在 **Plugins → Discover → Unofficial, on GitHub** 查找 `magpie-cache-guard`（缓存看守）。GitHub 搜索索引和 Magpie 的十分钟列表缓存可能使首次出现延迟。
+
+命令行安装：
+
+```sh
+magpie plugin add github:x-mug/magpie-cache-guard
+```
+
+固定版本可用 `github:x-mug/magpie-cache-guard#v0.8.1`。配置、阈值与日常刷新均在 Magpie 页面内完成。它只读本机用量账本，不请求模型。
+
+[magpie-cache-guard](https://github.com/x-mug/magpie-cache-guard) 是可直接安装的独立发布仓库，根目录包含插件 manifest、入口和页面，由 [magpie-plugins](https://github.com/x-mug/magpie-plugins/tree/main/plugins/magpie-cache-guard) 的子目录在 CI 通过后自动同步。请在主仓库提交代码修改，不要在发布仓库重复维护。
+
+离线安装可在 [Releases](https://github.com/x-mug/magpie-cache-guard/releases) 下载 `.tgz`，解压到固定目录，再添加解压后的 `package` 文件夹绝对路径。主源码仓库的根目录仍是合集工具包，不作为插件安装。
 
 装好后侧边栏 **Plugins** 组里多一个 **缓存看守** 页面；插件本身不提供供应商，没有登录和模型列表，属正常。
 

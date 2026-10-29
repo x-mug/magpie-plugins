@@ -1,6 +1,6 @@
 {
   "name": "magpie-cache-guard",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "magpie plugin: prompt-cache dashboard (1h / today / 7d / 30d) with per-agent-model hit rates and low-hit alerts",
   "type": "module",
   "main": "./index.mjs",
@@ -12,6 +12,7 @@
   "license": "MIT",
   "magpie": {
     "maxConcurrency": 4,
+    "icon": "https://raw.githubusercontent.com/x-mug/magpie-cache-guard/main/page/icon.svg",
     "page": {
       "title": "Cache guard",
       "file": "page/index.html",

@@ -1,0 +1,45 @@
+name: Sync install repositories
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-install-repositories
+  cancel-in-progress: false
+
+jobs:
+  cache-guard:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Configure deployment SSH key
+        env:
+          DEPLOY_KEY: ${{ secrets.CACHE_GUARD_DEPLOY_KEY }}
+        run: |
+          test -n "$DEPLOY_KEY"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/cache_guard_deploy
+          chmod 600 ~/.ssh/cache_guard_deploy
+          curl --fail --silent --show-error https://api.github.com/meta | python3 -c 'import json,sys; print("\n".join("github.com " + key for key in json.load(sys.stdin)["ssh_keys"]))' > ~/.ssh/known_hosts
+      - name: Publish plugin subtree
+        env:
+          GIT_SSH_COMMAND: ssh -i /home/runner/.ssh/cache_guard_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes
+        run: |
+          commit=$(git subtree split --prefix=plugins/magpie-cache-guard HEAD)
+          git push git@github.com:x-mug/magpie-cache-guard.git "$commit:refs/heads/main"
+          printf 'Published `%s` from source `%s`.\n' "$commit" "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove deployment SSH key
+        if: always()
+        run: rm -f ~/.ssh/cache_guard_deploy
