@@ -312,9 +312,21 @@ function groupRow(group, range) {
   return row
 }
 
+// 页面还没有真实宽度时量到的都是 0，写进去会把表格锁死成 0 宽，先不量也不写。
+function unsizeTableColumns() {
+  const table = $("groups")
+  delete table.dataset.sized
+  table.style.removeProperty("--table-width")
+  for (const col of table.querySelectorAll("col")) col.style.removeProperty("width")
+  columnWidths = null
+}
 function sizeTableColumns() {
   const table = $("groups")
   const scroller = table.closest(".table-scroll")
+  if (!(scroller && scroller.clientWidth > 0)) {
+    unsizeTableColumns()
+    return
+  }
   const probe = node("table", "table-sizing")
   probe.setAttribute("aria-hidden", "true")
   probe.append(table.querySelector("thead").cloneNode(true))
@@ -328,6 +340,10 @@ function sizeTableColumns() {
   probe.remove()
   // 列宽由内容决定；卡片更宽时按各列比例均摊余量，避免某一列被拉出大片空白。
   const total = natural.reduce((sum, width) => sum + width, 0)
+  if (!(total > 0) || natural.length !== table.querySelectorAll("col").length) {
+    unsizeTableColumns()
+    return
+  }
   const spare = Math.max(0, (scroller?.clientWidth ?? total) - total)
   const widths = natural.map(width => width + (spare ? (spare * width) / total : 0))
   columnWidths = widths
@@ -602,7 +618,18 @@ async function main() {
 const syncHeaderStuck = () => pageHeader?.classList.toggle("is-stuck", window.scrollY > 8)
 window.addEventListener("scroll", syncHeaderStuck, { passive: true })
 syncHeaderStuck()
-document.addEventListener("visibilitychange", () => { if (!document.hidden) pull() })
+// 资源版本标记：截图即可确认真机加载的是哪一版页面。
+document.documentElement.dataset.build = "0.8.3"
+const footerBuild = document.querySelector(".table-footer")
+if (footerBuild) {
+  const tag = document.createElement("span")
+  tag.textContent = "build 0.8.3"
+  footerBuild.append(tag)
+}
+document.addEventListener("visibilitychange", () => { if (document.hidden) return
+  if (!columnWidths) renderDashboard()
+  pull()
+})
   try {
     await magpie.ready
     fill((await magpie.options.get()) ?? {})

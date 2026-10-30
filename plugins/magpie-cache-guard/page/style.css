@@ -170,9 +170,7 @@ h2 { font-size: 13px; font-weight: 600; letter-spacing: -.15px; }
 .search-control .icon { width: 14px; height: 14px; color: var(--subtle); }
 .search-control input { width: 100%; min-width: 0; border: 0; background: transparent; padding: 0; font-size: 11px; outline: none; }
 .table-scroll { max-height: 480px; overflow: auto; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
-table { border-collapse: collapse; width: var(--table-width, 100%); table-layout: auto; }
-table[data-sized="1"] { table-layout: fixed; }
-table thead th { min-width: 76px; }
+table { border-collapse: collapse; width: var(--table-width, auto); table-layout: fixed; }
 .table-sizing { position: absolute; left: -100000px; top: 0; visibility: hidden; pointer-events: none; width: max-content; min-width: 0; table-layout: auto; }
 .table-sizing .model-name { width: max-content; max-width: 32ch; }
 .table-sizing .entity-tag { max-width: 180px; }
