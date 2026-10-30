@@ -1,0 +1,3 @@
+[submodule "plugins/magpie-cache-guard"]
+	path = plugins/magpie-cache-guard
+	url = https://github.com/x-mug/magpie-cache-guard.git

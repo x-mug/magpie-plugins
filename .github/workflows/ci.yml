@@ -18,10 +18,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Verify plugin
+      - name: Verify plugins
         run: node scripts/verify.mjs
       - name: Create package directory
         run: node -e "require('fs').mkdirSync('dist',{recursive:true})"
