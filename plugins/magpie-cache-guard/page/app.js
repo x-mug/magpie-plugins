@@ -334,10 +334,14 @@ function sizeTableColumns() {
   table.dataset.naturalWidths = natural.join(",")
   Array.from(table.querySelectorAll("col")).forEach((col, index) => { col.style.width = `${widths[index]}px` })
   table.style.setProperty("--table-width", `${Math.max(scroller?.clientWidth ?? total, total)}px`)
+  table.dataset.sized = "1"
 }
 
 function renderTable(range) {
-  if (!columnWidths) sizeTableColumns()
+  if (!columnWidths) {
+    delete $("groups").dataset.sized
+    sizeTableColumns()
+  }
   const groups = range?.groups ?? []
   const query = $("search").value.trim().toLocaleLowerCase()
   const visible = groups.filter((group) => [group.agent, group.provider, group.model].some((s) => String(s).toLocaleLowerCase().includes(query)))
@@ -594,7 +598,11 @@ async function main() {
   }
   window.addEventListener("resize", refreshColumns)
   document.fonts.ready.then(refreshColumns)
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) pull() })
+  const pageHeader = document.querySelector(".page-header")
+const syncHeaderStuck = () => pageHeader?.classList.toggle("is-stuck", window.scrollY > 8)
+window.addEventListener("scroll", syncHeaderStuck, { passive: true })
+syncHeaderStuck()
+document.addEventListener("visibilitychange", () => { if (!document.hidden) pull() })
   try {
     await magpie.ready
     fill((await magpie.options.get()) ?? {})
