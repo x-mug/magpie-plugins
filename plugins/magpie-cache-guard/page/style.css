@@ -103,6 +103,7 @@ h1 { font-size: 21px; line-height: 1.3; font-weight: 600; letter-spacing: -.6px;
 .cadence-control select:hover { background: var(--surface-2); }
 .cadence-control > .icon { position: absolute; pointer-events: none; width: 13px; height: 13px; right: 7px; color: var(--subtle); }
 select option { background: var(--surface); color: var(--ink); }
+.build { color: var(--subtle); font-size: 11px; font-variant-numeric: tabular-nums; }
 .updated { color: var(--subtle); font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .notice { padding: 10px 12px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--muted); font-size: 12px; }
 .notice[data-tone="error"] { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 25%, var(--line)); }
