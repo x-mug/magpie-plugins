@@ -22,6 +22,10 @@ for (const name of plugins) {
   for (const file of [manifest.main,"page/app.js","verification/run-browser.mjs"]) run(dir,["--check",file])
   run(dir,["verification/backend-speed.mjs"])
   const html=fs.readFileSync(path.join(dir,manifest.magpie.page.file),"utf8")
+  const dataBuild=html.match(/<html[^>]*\sdata-build="([^"]+)"/)?.[1]
+  const badge=html.match(/id="build"[^>]*>v([^<]+)</)?.[1]
+  assert.equal(dataBuild,manifest.version,`${name}: page data-build ${dataBuild} does not match package.json ${manifest.version}`)
+  assert.equal(badge,manifest.version,`${name}: page build badge ${badge} does not match package.json ${manifest.version}`)
   assert.ok(html.includes('id="tabs"') && html.includes('id="detailTabs"'),"Both cards need range controls")
   assert.ok(!/<form\b/i.test(html),"The host sandbox blocks forms")
   assert.ok(!/<script(?![^>]*\bsrc=)[^>]*>\s*\S/i.test(html),"The host requires external script files")

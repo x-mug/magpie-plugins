@@ -20,7 +20,7 @@ github:x-mug/magpie-cache-guard
 magpie plugin add github:x-mug/magpie-cache-guard
 ```
 
-固定版本可用 `github:x-mug/magpie-cache-guard#v0.8.1`。配置、阈值与日常刷新均在 Magpie 页面内完成。它只读本机用量账本，不请求模型。
+固定版本可用 `github:x-mug/magpie-cache-guard#v0.8.6`。配置、阈值与日常刷新均在 Magpie 页面内完成。它只读本机用量账本，不请求模型。
 
 [magpie-cache-guard](https://github.com/x-mug/magpie-cache-guard) 是可直接安装的独立发布仓库，根目录包含插件 manifest、入口和页面，由 [magpie-plugins](https://github.com/x-mug/magpie-plugins/tree/main/plugins/magpie-cache-guard) 的子目录在 CI 通过后自动同步。请在主仓库提交代码修改，不要在发布仓库重复维护。
 
