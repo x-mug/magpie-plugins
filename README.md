@@ -48,6 +48,40 @@ scripts/check-packages.mjs # 安装包内容与 SHA256 检查
 
 同步失败会保留上一次可安装版本，在主仓库 Actions 修复并重新运行即可；不要直接修改发布仓库，否则后续普通推送会因历史分叉而拒绝同步。
 
+### 更新是怎么被发现的
+
+Magpie 判断插件有没有更新，读的是**独立安装仓库** `x-mug/magpie-cache-guard` 的 HEAD，不是本仓库的 `main`。本仓库推了 `main` 而同步没发生，安装端就会一直显示「已是最新」。
+
+安装目录里的 `.bun-tag`（形如 `x-mug-magpie-cache-guard-<短sha>`）记录的就是安装当时的独立仓库提交，可以和 `git ls-remote` 对照。
+
+本仓库是唯一源码入口，不要在独立仓库直接改文件：那会让后续同步因历史分叉被拒。
+
+### 发版清单
+
+1. 改代码；
+2. 升版本：`plugins/magpie-cache-guard/package.json` 的 `version`（页面资源按版本缓存，不升版本安装在端可能拿旧资源）；
+3. 本地验证：`node scripts/verify.mjs`；
+4. 推送 `main`，等 CI 的 `Sync install repositories` 完成；
+5. 核对同步结果，HEAD 应停在刚推送的提交：
+
+   ```sh
+   git ls-remote https://github.com/x-mug/magpie-cache-guard.git refs/heads/main
+   ```
+
+6. 在 Magpie 插件页点「检查更新」。
+
+### 同步未发生时的手动补救
+
+先在本地复刻工作流的 split，推送前必须确认是快进：
+
+```sh
+git subtree split -P plugins/magpie-cache-guard -b cache-guard-sync
+git merge-base --is-ancestor <独立仓库当前HEAD> cache-guard-sync   # 成功才继续
+git push https://github.com/x-mug/magpie-cache-guard.git cache-guard-sync:main
+```
+
+祖先关系不成立说明两边已经分叉，此时不要强推，先查清独立仓库上有没有人直接提交。同步完成后，再去 Actions 页面查工作流为什么没跑：是否被禁用、CI 是否失败、`CACHE_GUARD_DEPLOY_KEY` 是否失效。
+
 ## 开发和验证
 
 需要 **Node.js 24**，核心验证不需要第三方依赖：
