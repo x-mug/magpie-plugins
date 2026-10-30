@@ -1,6 +1,6 @@
 {
   "name": "magpie-cache-guard",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "magpie plugin: prompt-cache dashboard (1h / today / 7d / 30d) with per-agent-model hit rates and low-hit alerts",
   "type": "module",
   "main": "./index.mjs",

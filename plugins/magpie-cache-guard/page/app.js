@@ -618,14 +618,7 @@ async function main() {
 const syncHeaderStuck = () => pageHeader?.classList.toggle("is-stuck", window.scrollY > 8)
 window.addEventListener("scroll", syncHeaderStuck, { passive: true })
 syncHeaderStuck()
-// 资源版本标记：截图即可确认真机加载的是哪一版页面。
-document.documentElement.dataset.build = "0.8.3"
-const footerBuild = document.querySelector(".table-footer")
-if (footerBuild) {
-  const tag = document.createElement("span")
-  tag.textContent = "build 0.8.3"
-  footerBuild.append(tag)
-}
+
 document.addEventListener("visibilitychange", () => { if (document.hidden) return
   if (!columnWidths) renderDashboard()
   pull()
